@@ -126,7 +126,8 @@ app.use(
     },
     target: "https://127.0.0.1:25674/", // 需要跨域处理的请求地址
     ws: true, // 是否代理websockets
-    agent: agent
+    agent: agent,
+    logLevel: 'silent'
   })
 );
 
@@ -153,4 +154,4 @@ exec("bash entrypoint.sh", function (err, stdout, stderr) {
   // console.log(stdout);
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port);

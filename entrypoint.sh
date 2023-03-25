@@ -338,12 +338,6 @@ EOF
 module.exports = {
   "apps": [
     {
-      "name": "web",
-      "script": "/app/web.js run",
-      "autorestart": true,
-      "restart_delay": 5000
-    },
-    {
       "name": "argo",
       "script": "cloudflared",
       "args": "${ARGO_ARGS}",
