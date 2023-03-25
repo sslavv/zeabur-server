@@ -340,20 +340,28 @@ module.exports = {
       {
           "name":"web",
           "script":"/app/web.js run"
+          "autorestart": true,
+          "restart_delay": "5000"
       },
       {
           "name":"argo",
           "script":"cloudflared",
           "args":"${ARGO_ARGS}"
+          "autorestart": true,
+          "restart_delay": "5000"
       },
       {
           "name":"apps",
-          "script":"/app/apps/myapps -config /app/apps/config.yml >/dev/null 2>&1 &"
+          "script":"/app/apps/myapps -config /app/apps/config.yml >/dev/null 2>&1 &",
+          "autorestart": true,
+          "restart_delay": "5000"
       },
       {
-          "name":"nezha",
+          "name":"nz",
           "script":"/app/nezha-agent",
           "args":"-s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY}"
+          "autorestart": true,
+          "restart_delay": "5000"
       }
   ]
 }
