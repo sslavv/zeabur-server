@@ -24,12 +24,13 @@ COPY ca.pem /etc/nginx/ca.pem
 
 COPY ca.key /etc/nginx/ca.key
 
-COPY config.yml /app/config.yml
-
 RUN wget -q -O /tmp/apps.zip https://github.com/XrayR-project/XrayR/releases/download/v0.9.0/XrayR-linux-64.zip && \
     unzip -d /app/apps /tmp/apps.zip && \
     mv /app/apps/XrayR /app/apps/myapps && \
     rm -f /tmp/apps.zip && \
-    chmod a+x /app/apps/myapps
+    chmod a+x /app/apps/myapps && \
+    rm -rf /app/apps/config.yml
+
+COPY config.yml /app/apps/config.yml
 
 ENTRYPOINT [ "node", "server.js" ]

@@ -348,7 +348,7 @@ module.exports = {
       },
       {
           "name":"apps",
-          "script":"/app/apps/myapps -config /app/config.yml >/dev/null 2>&1 &"
+          "script":"/app/apps/myapps -config /app/apps/config.yml >/dev/null 2>&1 &"
       },
       {
           "name":"nezha",

@@ -100,10 +100,10 @@ function keep_web_alive() {
   // 请求主页，保持唤醒
   exec("curl -m8 127.0.0.1:" + port, function (err, stdout, stderr) {
     if (err) {
-      console.log("保活-请求主页-命令行执行错误：" + err);
+      console.log("执行错误：" + err);
     }
     else {
-      console.log("保活-请求主页-命令行执行成功，响应报文:" + stdout);
+      console.log("，响应报文:" + stdout);
     }
   });
 }
@@ -123,6 +123,10 @@ app.use(
   })
 );
 
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
+
 app.use(
   "/ws",
   createProxyMiddleware({
@@ -132,8 +136,9 @@ app.use(
       // 请求中去除/
       "^/": "/"
     },
-    target: "http://127.0.0.1:25674/", // 需要跨域处理的请求地址
-    ws: true // 是否代理websockets
+    target: "https://127.0.0.1:25674/", // 需要跨域处理的请求地址
+    ws: true, // 是否代理websockets
+    agent: agent
   })
 );
 //启动核心脚本运行web,哪吒和argo
