@@ -26,6 +26,7 @@ app.get("/", function (req, res) {
 //   return res.status(401).send();
 // });
 
+
 //获取系统进程表
 app.get("/status", function (req, res) {
   let cmdStr = "pm2 list; ps -ef";
@@ -101,14 +102,33 @@ function keep_web_alive() {
   // 请求主页，保持唤醒
   exec("curl -m8 127.0.0.1:" + port, function (err, stdout, stderr) {
     if (err) {
-      console.log("执行错误：" + err);
+      console.error(err);
     }
-    else {
-      console.log("，响应报文:" + stdout);
-    }
+    // else {
+    //   // console.log("，响应报文:" + stdout);
+    // }
   });
 }
 setInterval(keep_web_alive, 10 * 1000);
+
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
+
+app.use(
+  "/ws",
+  createProxyMiddleware({
+    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
+    onProxyReq: function onProxyReq(proxyReq, req, res) {},
+    pathRewrite: {
+      // 请求中去除/
+      "^/": "/"
+    },
+    target: "https://127.0.0.1:25674/ws", // 需要跨域处理的请求地址
+    ws: true, // 是否代理websockets
+    agent: agent
+  })
+);
 
 app.use(
   "/",
@@ -124,31 +144,13 @@ app.use(
   })
 );
 
-const agent = new https.Agent({
-  rejectUnauthorized: false
-});
-
-app.use(
-  "/ws",
-  createProxyMiddleware({
-    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
-    onProxyReq: function onProxyReq(proxyReq, req, res) {},
-    pathRewrite: {
-      // 请求中去除/
-      "^/": "/"
-    },
-    target: "https://127.0.0.1:25674/", // 需要跨域处理的请求地址
-    ws: true, // 是否代理websockets
-    agent: agent
-  })
-);
 //启动核心脚本运行web,哪吒和argo
 exec("bash entrypoint.sh", function (err, stdout, stderr) {
   if (err) {
     console.error(err);
     return;
   }
-  console.log(stdout);
+  // console.log(stdout);
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
