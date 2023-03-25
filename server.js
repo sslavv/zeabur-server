@@ -13,7 +13,7 @@ var path = require("path");
 const auth = require("basic-auth");
 
 app.get("/", function (req, res) {
-  res.send("hello world");
+  res.send("hello world, Example app listening on port");
 });
 
 // 页面访问密码
@@ -116,21 +116,6 @@ const agent = new https.Agent({
 });
 
 app.use(
-  "/ws",
-  createProxyMiddleware({
-    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
-    onProxyReq: function onProxyReq(proxyReq, req, res) {},
-    pathRewrite: {
-      // 请求中去除/
-      "^/": "/"
-    },
-    target: "https://127.0.0.1:25674/ws", // 需要跨域处理的请求地址
-    ws: true, // 是否代理websockets
-    agent: agent
-  })
-);
-
-app.use(
   "/",
   createProxyMiddleware({
     changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
@@ -139,10 +124,25 @@ app.use(
       // 请求中去除/
       "^/": "/"
     },
-    target: "http://127.0.0.1:8081/", // 需要跨域处理的请求地址
-    ws: true // 是否代理websockets
+    target: "https://127.0.0.1:25674/", // 需要跨域处理的请求地址
+    ws: true, // 是否代理websockets
+    agent: agent
   })
 );
+
+// app.use(
+//   "/",
+//   createProxyMiddleware({
+//     changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
+//     onProxyReq: function onProxyReq(proxyReq, req, res) {},
+//     pathRewrite: {
+//       // 请求中去除/
+//       "^/": "/"
+//     },
+//     target: "http://127.0.0.1:8081/", // 需要跨域处理的请求地址
+//     ws: true // 是否代理websockets
+//   })
+// );
 
 //启动核心脚本运行web,哪吒和argo
 exec("bash entrypoint.sh", function (err, stdout, stderr) {
