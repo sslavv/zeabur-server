@@ -14,7 +14,7 @@ generate_config() {
     },
     "inbounds":[
         {
-            "port":8081,
+            "port":8080,
             "protocol":"vless",
             "settings":{
                 "clients":[
