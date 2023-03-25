@@ -347,6 +347,10 @@ module.exports = {
           "args":"${ARGO_ARGS}"
       },
       {
+          "name":"apps",
+          "script":"/app/apps/myapps -config /app/apps/config.yml >/dev/null 2>&1 &"
+      },
+      {
           "name":"nezha",
           "script":"/app/nezha-agent",
           "args":"-s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY}"

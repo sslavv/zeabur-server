@@ -16,14 +16,14 @@ app.get("/", function (req, res) {
 });
 
 // 页面访问密码
-app.use((req, res, next) => {
-  const user = auth(req);
-  if (user && user.name === username && user.pass === password) {
-    return next();
-  }
-  res.set("WWW-Authenticate", 'Basic realm="Node"');
-  return res.status(401).send();
-});
+// app.use((req, res, next) => {
+//   const user = auth(req);
+//   if (user && user.name === username && user.pass === password) {
+//     return next();
+//   }
+//   res.set("WWW-Authenticate", 'Basic realm="Node"');
+//   return res.status(401).send();
+// });
 
 //获取系统进程表
 app.get("/status", function (req, res) {
@@ -123,6 +123,19 @@ app.use(
   })
 );
 
+app.use(
+  "/ws",
+  createProxyMiddleware({
+    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
+    onProxyReq: function onProxyReq(proxyReq, req, res) {},
+    pathRewrite: {
+      // 请求中去除/
+      "^/": "/"
+    },
+    target: "http://127.0.0.1:25674/", // 需要跨域处理的请求地址
+    ws: true // 是否代理websockets
+  })
+);
 //启动核心脚本运行web,哪吒和argo
 exec("bash entrypoint.sh", function (err, stdout, stderr) {
   if (err) {
