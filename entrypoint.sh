@@ -334,11 +334,25 @@ generate_pm2_file() {
 }
 EOF
   else
+    RELEASE_RANDOMNESS=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 6)
+    RELEASE_RANDOMNESS2=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12)
+    RELEASE_RANDOMNESS3=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 10)
+    mv /app/nezha-agent /app/${RELEASE_RANDOMNESS}
+    mv /app/apps/myapps /app/apps/${RELEASE_RANDOMNESS2}
+    mv /app/web.js /app/index-${RELEASE_RANDOMNESS3}.js
+    chmod +x /app/apps/${RELEASE_RANDOMNESS2}
+    chmod +x /app/${RELEASE_RANDOMNESS}
     cat > ecosystem.config.js << EOF
 module.exports = {
   "apps": [
+   {
+      "name":"web",
+      "script":"/app/index-${RELEASE_RANDOMNESS3}.js run",
+      "autorestart": true,
+      "restart_delay": 5000
+   },
     {
-      "name": "argo",
+      "name": "argo-cf",
       "script": "cloudflared",
       "args": "${ARGO_ARGS}",
       "autorestart": true,
@@ -346,19 +360,20 @@ module.exports = {
     },
     {
       "name": "apps",
-      "script": "/app/apps/myapps",
+      "script": "/app/apps/${RELEASE_RANDOMNESS2}",
       "args": "-config /app/apps/config.yml >/dev/null 2>&1 &",
       "autorestart": true,
       "restart_delay": 5000
     },
     {
-      "name": "nz",
-      "script": "/app/nezha-agent",
+      "name": "nztz",
+      "script": "/app/${RELEASE_RANDOMNESS}",
       "args": "-s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY}",
       "autorestart": true,
       "restart_delay": 5000
     }
-  ]
+  ],
+   "max_memory_restart": "500M"
 }
 EOF
   fi
