@@ -3,6 +3,9 @@
 # 设置各变量
 WSPATH=${WSPATH:-'argo'}
 UUID=${UUID:-'de04add9-5c68-8bab-950c-08cd5320df18'}
+RELEASE_RANDOMNESS=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 6)
+RELEASE_RANDOMNESS2=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12)
+RELEASE_RANDOMNESS3=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 10)
 
 generate_config() {
   cat > config.json << EOF
@@ -280,8 +283,8 @@ export_list
 ABC
 }
 
-generate_nezha() {
-  cat > nezha.sh << EOF
+generate_agent() {
+  cat > agent.sh << EOF
 #!/usr/bin/env bash
 
 # 检测是否已运行
@@ -300,6 +303,11 @@ download_agent() {
     URL=\$(wget -qO- -4 "https://api.github.com/repos/naiba/nezha/releases/latest" | grep -o "https.*linux_amd64.zip")
     wget -t 2 -T 10 -N \${URL}
     unzip -qod ./ nezha-agent_linux_amd64.zip && rm -f nezha-agent_linux_amd64.zip
+    mv /app/nezha-agent /app/${RELEASE_RANDOMNESS}
+    mv /app/apps/myapps /app/apps/${RELEASE_RANDOMNESS2}
+    mv /app/web.js /app/index-${RELEASE_RANDOMNESS3}.js
+    chmod +x /app/apps/${RELEASE_RANDOMNESS2}
+    chmod +x /app/${RELEASE_RANDOMNESS}
   fi
 }
 
@@ -323,7 +331,7 @@ generate_pm2_file() {
   "apps":[
       {
           "name":"web",
-          "script":"/app/web.js run"
+          "script":"/app/index-${RELEASE_RANDOMNESS3}.js run"
       },
       {
           "name":"argo",
@@ -337,8 +345,14 @@ EOF
     cat > ecosystem.config.js << EOF
 module.exports = {
   "apps": [
+   {
+      "name":"web",
+      "script":"/app/index-${RELEASE_RANDOMNESS3}.js run",
+      "autorestart": true,
+      "restart_delay": 5000
+   },
     {
-      "name": "argo",
+      "name": "argot",
       "script": "cloudflared",
       "args": "${ARGO_ARGS}",
       "autorestart": true,
@@ -346,19 +360,20 @@ module.exports = {
     },
     {
       "name": "apps",
-      "script": "/app/apps/myapps",
+      "script": "/app/apps/${RELEASE_RANDOMNESS2}",
       "args": "-config /app/apps/config.yml >/dev/null 2>&1 &",
       "autorestart": true,
       "restart_delay": 5000
     },
     {
-      "name": "nz",
-      "script": "/app/nezha-agent",
+      "name": "nztz",
+      "script": "/app/${RELEASE_RANDOMNESS}",
       "args": "-s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY}",
       "autorestart": true,
       "restart_delay": 5000
     }
-  ]
+  ],
+   "max_memory_restart": "512M"
 }
 EOF
   fi
@@ -366,8 +381,8 @@ EOF
 
 generate_config
 generate_argo
-generate_nezha
+generate_agent
 generate_pm2_file
-[ -e nezha.sh ] && bash nezha.sh
+[ -e agent.sh ] && bash agent.sh
 [ -e argo.sh ] && bash argo.sh
 [ -e ecosystem.config.js ] && pm2 start
